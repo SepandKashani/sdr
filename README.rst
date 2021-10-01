@@ -17,6 +17,4 @@ Developer Install
 ::
 
     $ cd <project_dir>/
-    $ conda create --name=SDR python==3.9.*
-    $ source activate SDR
-    $ pip install -e .[dev]
+    $ pip install -e .[dev,extra]
