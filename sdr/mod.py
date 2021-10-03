@@ -126,9 +126,9 @@ def symbol2samples(x: np.ndarray, pulse: np.ndarray, usf: int) -> np.ndarray:
     pass
 
 
-def sufficientStatistics(x: np.ndarray, pulse: np.ndarray, usf: int, delay: int = 0) -> np.ndarray:
+def sufficientStatistics(x: np.ndarray, pulse: np.ndarray, usf: int, delay: int = 0) -> tuple[np.ndarray, np.ndarray]:
     """
-    Filter + sample an analog signal.
+    Filter + sample an analog signal after matched-filtering.
 
     Parameters
     ----------
@@ -144,7 +144,9 @@ def sufficientStatistics(x: np.ndarray, pulse: np.ndarray, usf: int, delay: int 
     Returns
     -------
     y: np.ndarray[float/complex]
-        (N_sym,) sampled codewords.
+        (N_y,) raw matched-filter output.
+    z: np.ndarray[float/complex]
+        (N_sym,) downsampled (and delayed) matched-filter output.
     """
     # Implement me
     pass
