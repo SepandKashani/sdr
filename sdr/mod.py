@@ -14,6 +14,109 @@ RX architecture:
 """
 
 
+class Modulator:
+    """
+    Modulate continuous symbols onto/out-of an analog channel.
+    """
+
+    def __init__(self, sample_rate: int, symbol_rate: int):
+        """
+        Parameters
+        ----------
+        sample_rate: int
+            Sampling rate [sample/s].
+        symbol_rate: int
+            Symbol rate [symbol/s].
+        """
+        assert sample_rate > symbol_rate > 0
+        self._sample_rate = sample_rate
+        self._symbol_rate = symbol_rate
+
+    def tx_interpolate(self, x: np.ndarray, filter: np.ndarray, axis: int = -1) -> np.ndarray:
+        r"""
+        Upsample and interpolate symbol stream(s) `x`.
+
+        Parameters
+        ----------
+        x: np.ndarray[continuous alphabet]
+            (..., N_sym, ...) symbol stream.
+            Symbol rate = `symbol_rate`
+        filter: np.ndarray[float/complex]
+            (N_tap,) interpolation filter.
+            Sample rate = `sample_rate`
+        axis: int
+            Dimension along which to filter. (Default: -1)
+
+        Returns
+        -------
+        y: np.ndarray[float/complex]
+            (..., N, ...) interpolated signal(s)  y(t) = \sum_{n} x[n] f(t - n T)
+            Sample rate = `sample_rate`
+        """
+        assert filter.ndim == 1
+        assert -x.ndim <= axis < x.ndim
+
+        upsample_factor = int(self._sample_rate / self._symbol_rate)
+        return (y := sps.upfirdn(filter, x, up=upsample_factor, axis=axis))
+
+    def rx_prefilter(self, x: np.ndarray, filter: np.ndarray, axis: int = -1) -> np.ndarray:
+        r"""
+        Filter samples of analog signal(s).
+
+        Parameters
+        ----------
+        x: np.ndarray[float/complex]
+            (..., N_sample, ...) analog signal(s). [sampled]
+            Sample rate = `sample_rate`
+        filter: np.ndarray[float/complex]
+            (N_tap,) filtering kernel.
+            Sample rate = `sample_rate`
+        axis: int
+            Dimension along which to filter. (Default: -1)
+
+        Returns
+        -------
+        y: np.ndarray[float/complex]
+            (..., N, ...) filtered signal(s) y(t) = x(t) \conv f(t)
+            Sample rate = `sample_rate`
+
+            y[N_tap-1] is the first output where the filter fully-overlaps with the input.
+        """
+        assert filter.ndim == 1
+        assert -x.ndim <= axis < x.ndim
+
+        return (y := sps.upfirdn(filter, x, axis=axis))
+
+    def rx_sample(self, x: np.ndarray, delay: int = 0, axis: int = -1) -> np.ndarray:
+        """
+        Sample analog signal(s).
+        This method should be called after `rx_prefilter()`.
+
+        Parameters
+        ----------
+        x: np.ndarray[float/complex]
+            (..., N_sample, ...) signal(s) to sample.
+            Sample rate = `sample_rate`
+        delay: int
+            Number of samples to drop at the start of `x`. (Default: 0)
+        axis: int
+            Dimension along which to sample. (Default: -1)
+
+        Returns
+        -------
+        y: np.ndarray[float/complex]
+            (..., N, ...) sampled signal(s).
+            Sample rate = `symbol_rate`
+        """
+        assert delay >= 0
+        assert -x.ndim <= axis < x.ndim
+
+        select = [slice(None)] * x.ndim
+        step = int(self._sample_rate / self._symbol_rate)
+        select[axis] = slice(delay, None, step)
+        return (y := x[tuple(select)])
+
+
 class UpDownConverter:
     """
     Baseband <> Passband modulator.
@@ -122,11 +225,17 @@ def symbol2samples(x: np.ndarray, pulse: np.ndarray, usf: int) -> np.ndarray:
         (N_sample,) interpolated signal y(t) = \sum_{n} x[n] f(t - n T)
         N_sample should be >= usf * N_sym.
     """
-    # Implement me
-    pass
+    modder = Modulator(sample_rate=usf, symbol_rate=1)
+    y = modder.tx_interpolate(x, filter=pulse)
+    return y
 
 
-def sufficientStatistics(x: np.ndarray, pulse: np.ndarray, usf: int, delay: int = 0) -> tuple[np.ndarray, np.ndarray]:
+def sufficientStatistics(
+    x: np.ndarray,
+    pulse: np.ndarray,
+    usf: int,
+    delay: int = 0,
+) -> tuple[np.ndarray, np.ndarray]:
     """
     Filter + sample an analog signal after matched-filtering.
 
@@ -148,5 +257,7 @@ def sufficientStatistics(x: np.ndarray, pulse: np.ndarray, usf: int, delay: int 
     z: np.ndarray[float/complex]
         (N_sym,) downsampled (and delayed) matched-filter output.
     """
-    # Implement me
-    pass
+    modder = Modulator(sample_rate=usf, symbol_rate=1)
+    y = modder.rx_prefilter(x, filter=pulse[::-1].conj())
+    z = modder.rx_sample(y, delay=delay)
+    return y, z
