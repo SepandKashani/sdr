@@ -155,5 +155,22 @@ def eye_plot(
     ax: matplotlib.axes.Axes
         Eye-diagram
     """
-    # Implement me
-    pass
+    assert sig.ndim == 1
+    assert sample_rate > 0
+    assert symbol_rate > 0
+
+    if ax is None:
+        _, ax = plt.subplots()
+
+    # chunk `sig` into [-T, T] segments
+    segment_size = 2 * int(sample_rate / symbol_rate)
+    N_sample = sig.size
+    N_segment = (N_sample - delay) // segment_size
+    sig = np.reshape(sig[delay : (delay + N_segment * segment_size)], (N_segment, -1))
+
+    T = 1 / symbol_rate
+    t = np.arange(segment_size) / sample_rate - T
+    ax.plot(t, sig.T)
+    ax.set_xlabel("Time [s]")
+    ax.set_ylabel("Amplitude")
+    return ax
