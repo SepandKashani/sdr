@@ -185,10 +185,12 @@ def rcosdesign(beta: float, span: int, sps: int) -> np.ndarray:
     p: np.ndarray[float]
         (N_span * sps,) pulse coefficients, normalized to unit energy.
     """
+    assert span % 2 == 1
+
     _, p = sample(
         pulse=RRC(T=1, beta=beta),
-        start=-(span - 1),
-        stop=span - 1,
+        start=-span / 2,
+        stop=span / 2,
         sample_rate=sps,
     )
     p /= npl.norm(p, ord=2)
