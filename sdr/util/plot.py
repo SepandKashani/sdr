@@ -125,3 +125,35 @@ def tf_plot(sig: np.ndarray, sample_rate: int, name: str, title: str) -> figure.
     f_plot(sig, sample_rate, name=name, ax=ax[1])
     fig.suptitle(title)
     return fig
+
+
+def eye_plot(
+    sig: np.ndarray,
+    sample_rate: int,
+    symbol_rate: int,
+    delay: int = 0,
+    ax: axes.Axes = None,
+) -> axes.Axes:
+    r"""
+    Plot eye-diagram of a pulse train.
+
+    Parameters
+    ----------
+    sig: np.ndarray[float]
+        (N_sample,) signal of the form s(t) = \sum_{k} s_{k} \psi(t - kT), for some pulse \psi: \bR -> \bR.
+    sample_rate: int
+        Sampling rate of `sig`. [sample/s]
+    symbol_rate: int
+        Symbol rate of `sig`. [symbol/s]
+    delay: int
+        Index of first pulse peak. (Required to correctly label the X-axis.)
+    ax: matplotlib.axes.Axes
+        Canvas to draw on. (Optional)
+
+    Returns
+    -------
+    ax: matplotlib.axes.Axes
+        Eye-diagram
+    """
+    # Implement me
+    pass
