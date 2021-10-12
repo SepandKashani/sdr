@@ -261,3 +261,25 @@ def sufficientStatistics(
     y = modder.rx_prefilter(x, filter=pulse[::-1].conj())
     z = modder.rx_sample(y, delay=delay)
     return y, z
+
+
+def estimateDelay(x: np.ndarray, y: np.ndarray):
+    """
+    Find offset in `x` where `y` is most-likely located.
+
+    In essence, find the offset in `x` where |<x, y>| is maximal.
+
+    Parameters
+    ----------
+    x: np.ndarray[float/complex]
+        (N_x,) input signal(s).
+    y: np.ndarray[float/complex]
+        (N_y,) pattern samples.
+
+    Returns
+    -------
+    idx: int
+        Offset w.r.t `x` where `y` is most-likely located.
+    """
+    # Implement me
+    pass
