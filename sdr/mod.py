@@ -206,6 +206,40 @@ class UpDownConverter:
         return (y := sps.upfirdn(post_filter, x * mod.reshape(sh), axis=axis))
 
 
+def locate(x: np.ndarray, y: np.ndarray, axis: int = -1) -> np.ndarray:
+    """
+    Find offset in `x` where `y` is most-likely located.
+
+    In essence, find the offset in `x` where |<x, y>| is maximal.
+
+    Parameters
+    ----------
+    x: np.ndarray[float/complex]
+        (..., N_x, ...) input signal(s).
+    y: np.ndarray[float/complex]
+        (N_y,) pattern samples.
+    axis: int
+        Dimension of `x` along which to search for `y`.
+
+    Returns
+    -------
+    idx: np.ndarray[int]
+        (..., ...) offsets where `y` is most-likely located.
+    """
+    assert y.ndim == 1
+    assert -x.ndim <= axis < x.ndim
+
+    z = sps.upfirdn(y[::-1], x, axis=axis)
+
+    # x/y do not fully-overlap during the convolution at the start of z: drop samples.
+    s = [slice(None)] * x.ndim
+    s[axis] = slice(len(y) - 1, None, None)
+    z = z[tuple(s)]
+
+    idx = np.argmax(np.abs(z), axis=axis)
+    return idx
+
+
 def symbol2samples(x: np.ndarray, pulse: np.ndarray, usf: int) -> np.ndarray:
     r"""
     Modulate a discrete symbol stream to line samples.
@@ -281,5 +315,5 @@ def estimateDelay(x: np.ndarray, y: np.ndarray):
     idx: int
         Offset w.r.t `x` where `y` is most-likely located.
     """
-    # Implement me
-    pass
+    idx = locate(x, y, axis=0)
+    return idx
