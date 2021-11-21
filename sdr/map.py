@@ -307,3 +307,88 @@ def decoder(x: np.ndarray, C: np.ndarray) -> np.ndarray:
     """
     dist = np.abs(x.reshape((*x.shape, 1)) - C)
     return (y := np.argmin(dist, axis=-1))
+
+
+def ofdm_tx_frame(
+    N_prefix: int,
+    x_train: np.ndarray,
+    mask_ch: np.ndarray,
+    x: np.ndarray,
+) -> np.ndarray:
+    """
+    Generate OFDM frame(s).
+
+    Parameters
+    ----------
+    N_prefix: int
+        Length of the circular prefix >= 0.
+    x_train: np.ndarray[float/complex]
+        (N_channel,) training symbols known to TX/RX. Used to estimate channel properties.
+    mask_ch: np.ndarray[bool]
+        (N_channel,) channel mask. Used to turn off individual channels. (I.e.: do not transmit data
+        on inactive channels.)
+    x: np.ndarray[float/complex]
+        (N_data,) symbols. It will be padded with zeros if not a multiple of useable carriers.
+
+    Returns
+    -------
+    y: np.ndarray[float/complex]
+        (Q,) serialized OFDM symbols, with the training sequence transmitted in the first OFDM
+        block.
+    """
+    # Implement me
+    pass
+
+
+def ofdm_rx_frame(
+    N_prefix: int,
+    mask_ch: np.ndarray,
+    x: np.ndarray,
+) -> np.ndarray:
+    """
+    Decode OFDM frame(s), without channel equalization.
+
+    Parameters
+    ----------
+    N_prefix: int
+        Length of the circular prefix >= 0.
+    mask_ch: np.ndarray[bool]
+        (N_channel,) channel mask. Used to turn off individual channels. (I.e.: no data received on
+        inactive channels.)
+    x: np.ndarray[float/complex]
+        (N_data,) symbols. Any trailing partial OFDM frame will be discarded.
+
+    Returns
+    -------
+    y: np.ndarray[complex]
+        (Q, N_active_ch) symbols, where Q is the number of decoded OFDM (block-)symbols.
+    """
+    # Implement me
+    pass
+
+
+def ofdm_channel(
+    N_prefix: int,
+    mask_ch: np.ndarray,
+    h: np.ndarray,
+) -> np.ndarray:
+    """
+    Compute the frequency-domain channel coefficients for a given impulse response.
+
+    Parameters
+    ----------
+    N_prefix: int
+        Length of the circular prefix >= 0. (Needed to determine if `h` is acceptable.)
+    mask_ch: np.ndarray[bool]
+        (N_channel,) channel mask. Used to turn off individual channels. (I.e.: no data on inactive
+        channels.)
+    h: np.ndarray[float/complex]
+        (N_tap,) channel impulse response.
+
+    Returns
+    -------
+    H: np.ndarray[complex]
+        (N_active_ch,) channel coefficients (frequency-domain).
+    """
+    # Implement me
+    pass
