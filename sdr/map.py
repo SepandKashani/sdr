@@ -626,8 +626,9 @@ def ofdm_channel_LS(y: np.ndarray, x_train: np.ndarray) -> np.ndarray:
     H: np.ndarray[complex]
         (N_active_ch,) channel coefficients (frequency-domain).
     """
-    # Implement me
-    pass
+    y_train = y[0]
+    H = y_train / x_train
+    return H
 
 
 def ofdm_channel_MMSE(
@@ -666,5 +667,18 @@ def ofdm_channel_MMSE(
     H: np.ndarray[complex]
         (N_active_ch,) channel coefficients (frequency-domain).
     """
-    # Implement me
-    pass
+    y_train = y[0]
+
+    N_channel = mask_ch.size
+    N_active_ch = x_train.size
+
+    k = npf.fftfreq(N_channel)[mask_ch].reshape((-1, 1))
+    A = np.exp(-1j * 2 * np.pi * k * tau)
+    Kd = A @ Ka @ A.conj().T
+
+    Kdy = Kd * x_train.conj()
+    Kz = var * np.eye(N_active_ch)
+    Ky = x_train.reshape((-1, 1)) * Kdy + Kz
+
+    H = Kdy @ spl.solve(Ky, y_train, assume_a="pos")
+    return H
