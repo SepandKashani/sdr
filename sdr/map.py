@@ -608,3 +608,63 @@ def ofdm_channel(
 
     H = mapper.channel(h)[mask_ch]
     return H
+
+
+def ofdm_channel_LS(y: np.ndarray, x_train: np.ndarray) -> np.ndarray:
+    """
+    Least-Squares (LS) estimation of frequency-domain channel coefficients.
+
+    Parameters
+    ----------
+    y: np.ndarray[float/complex]
+        (Q, N_active_ch) data stream, with training symbols in the leading OFDM block.
+    x_train: np.ndarray[float/complex]
+        (N_active_ch,) training symbols known to the receiver.
+
+    Returns
+    -------
+    H: np.ndarray[complex]
+        (N_active_ch,) channel coefficients (frequency-domain).
+    """
+    # Implement me
+    pass
+
+
+def ofdm_channel_MMSE(
+    y: np.ndarray,
+    x_train: np.ndarray,
+    mask_ch: np.ndarray,
+    Ka: np.ndarray,
+    tau: np.ndarray,
+    var: float,
+) -> np.ndarray:
+    """
+    Minimum Mean Squared-Error (MMSE) estimation of frequency-domain channel coefficients.
+
+    We assume the channel delays are known. The covariance matrix of channel amplitudes is also
+    assumed to be known.
+
+    Parameters
+    ----------
+    y: np.ndarray[float/complex]
+        (Q, N_active_ch) data stream, with training symbols in the leading OFDM block.
+    x_train: np.ndarray[float/complex]
+        (N_active_ch,) training symbols known to the receiver.
+    mask_ch: np.ndarray[bool]
+        (N_channel,) channel mask. Used to turn off individual channels. (I.e.: no data on inactive
+        channels.)
+    Ka: np.ndarray[float/complex]
+        (N_path, N_path) channel amplitude covariance matrix.
+    tau: np.ndarray[float]
+        (N_path,) delays for each path of the multi-path channel. The delays are expressed in number
+        of samples, i.e., tau_l/T_s.
+    var: float
+        Noise variance
+
+    Returns
+    -------
+    H: np.ndarray[complex]
+        (N_active_ch,) channel coefficients (frequency-domain).
+    """
+    # Implement me
+    pass
